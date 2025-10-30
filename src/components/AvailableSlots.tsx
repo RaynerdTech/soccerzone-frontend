@@ -623,33 +623,33 @@ const AvailableSlots: React.FC = () => {
                     </AnimatePresence>
 
                     {/* Booking Button (Unchanged) */}
-                    <button
-                      onClick={handleBooking}
-                      disabled={
-                        selectedSlots.size === 0 || booking || showLoginPrompt
-                      }
-                      className={`px-10 py-5 rounded-xl font-bold text-lg transition-all transform ${
-                        selectedSlots.size > 0 && !booking && !showLoginPrompt
-                          ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95"
-                          : "bg-slate-200 text-slate-400 cursor-not-allowed"
-                      }`}
-                    >
-                      {booking ? (
-                        <span className="flex items-center gap-3">
-                          <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Processing Payment...
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-3">
-                          <ShoppingCart className="w-5 h-5" />
-                          {selectedSlots.size > 0
-                            ? `Checkout ${selectedSlots.size} ${
-                                selectedSlots.size === 1 ? "Slot" : "Slots"
-                              }`
-                            : "Select Slots to Continue"}
-                        </span>
-                      )}
-                    </button>
+               <button
+  onClick={handleBooking}
+  disabled={selectedSlots.size === 0 || booking || showLoginPrompt}
+  className={`px-10 py-5 rounded-xl font-bold text-lg uppercase tracking-wide transition-all transform ${
+    selectedSlots.size > 0 && !booking && !showLoginPrompt
+      ? "bg-gradient-to-r from-green-700 to-emerald-600 text-white hover:from-green-800 hover:to-emerald-700 shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95"
+      : "bg-slate-200 text-slate-400 cursor-not-allowed"
+  }`}
+>
+  {booking ? (
+    <span className="flex items-center gap-3">
+      <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+      Securing Your Match...
+    </span>
+  ) : (
+    <span className="flex items-center gap-3">
+      <span className="text-xl">⚽</span>
+      {selectedSlots.size > 0
+        ? `Book ${selectedSlots.size} ${
+            selectedSlots.size === 1 ? "Game Slot" : "Game Slots"
+          }`
+        : "Select Your Game Slots"}
+    </span>
+  )}
+</button>
+
+
 
                     {selectedSlots.size > 0 && !showLoginPrompt && (
                       <p className="text-sm text-slate-600 text-center">

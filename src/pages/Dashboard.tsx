@@ -239,7 +239,7 @@ const Dashboard: React.FC = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.location.href = "/signup";
+    window.location.href = "/";
   };
 
   // --- RENDER STATES ---

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react"; // npm install lucide-react
+import { Menu, X } from "lucide-react";
+import AuthModal from "../pages/Signup"; // ✅ import your modal
 
 const navItems = [
   { name: "Home", path: "/" },
@@ -8,8 +9,11 @@ const navItems = [
   { name: "Event", path: "/event" },
 ];
 
+const token = localStorage.getItem("token");
+
 const Header: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showAuth, setShowAuth] = useState(false); // ✅ state for modal
   const [isScrolled, setIsScrolled] = useState(false);
 
   const SCROLL_THRESHOLD = 20;
@@ -23,8 +27,9 @@ const Header: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? "hidden" : "unset";
-  }, [menuOpen]);
+    document.body.style.overflow =
+      menuOpen || showAuth ? "hidden" : "unset";
+  }, [menuOpen, showAuth]);
 
   const headerScrolled = isScrolled || menuOpen;
   const headerBgClass = headerScrolled
@@ -63,11 +68,14 @@ const Header: React.FC = () => {
             ))}
           </nav>
 
-          {/* === Signup Button (Desktop) === */}
+          {/* === Signup/Login Button (Desktop) === */}
           <div className="hidden md:block">
-            <Link to="/signup">
-              <button className={buttonClasses}>Signup</button>
-            </Link>
+            <button
+              onClick={() => setShowAuth(true)} // ✅ open modal
+              className={buttonClasses}
+            >
+              {token ? "Login" : "Signup"}
+            </button>
           </div>
 
           {/* === Hamburger Icon (Mobile) === */}
@@ -98,19 +106,20 @@ const Header: React.FC = () => {
             </Link>
           ))}
 
-          <Link to="/signup" onClick={() => setMenuOpen(false)}>
-            <button className={`${buttonClasses} text-lg px-8 py-3`}>
-              Signup
-            </button>
-          </Link>
-
-          <Link to="/login" onClick={() => setMenuOpen(false)}>
-            <button className={`${buttonClasses} bg-gray-800 hover:bg-gray-900 text-lg px-8 py-3`}>
-              Login
-            </button>
-          </Link>
+          <button
+            onClick={() => {
+              setShowAuth(true);
+              setMenuOpen(false);
+            }}
+            className={`${buttonClasses} text-lg px-8 py-3`}
+          >
+            {token ? "Login" : "Signup"}
+          </button>
         </nav>
       </div>
+
+      {/* === Auth Modal === */}
+      <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
     </>
   );
 };

@@ -19,7 +19,7 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/event" element={<Event />} />
-            <Route path="/signup" element={<Signup />} />
+            <Route path="/signup" element={<Signup isOpen={true} onClose={() => {}} />} />
             {/* ✅ make sure this matches the actual Paystack redirect path */}
             <Route path="/payments/booking/success" element={<Success />} />
             <Route

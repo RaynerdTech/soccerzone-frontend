@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import AuthModal from "../pages/Signup"; // ✅ import your modal
 
@@ -9,14 +9,19 @@ const navItems = [
   { name: "Event", path: "/event" },
 ];
 
-const token = localStorage.getItem("token");
-
 const Header: React.FC = () => {
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showAuth, setShowAuth] = useState(false); // ✅ state for modal
+  const [showAuth, setShowAuth] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [hasToken, setHasToken] = useState(false);
 
   const SCROLL_THRESHOLD = 20;
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setHasToken(!!token);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,9 +32,16 @@ const Header: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow =
-      menuOpen || showAuth ? "hidden" : "unset";
+    document.body.style.overflow = menuOpen || showAuth ? "hidden" : "unset";
   }, [menuOpen, showAuth]);
+
+  const handleButtonClick = () => {
+    if (hasToken) {
+      navigate("/dashboard"); // ✅ go to dashboard if token exists
+    } else {
+      setShowAuth(true); // ✅ open modal if no token
+    }
+  };
 
   const headerScrolled = isScrolled || menuOpen;
   const headerBgClass = headerScrolled
@@ -68,13 +80,10 @@ const Header: React.FC = () => {
             ))}
           </nav>
 
-          {/* === Signup/Login Button (Desktop) === */}
+          {/* === Button (Desktop) === */}
           <div className="hidden md:block">
-            <button
-              onClick={() => setShowAuth(true)} // ✅ open modal
-              className={buttonClasses}
-            >
-              {token ? "Login" : "Signup"}
+            <button onClick={handleButtonClick} className={buttonClasses}>
+              {hasToken ? "Dashboard" : "Signup"}
             </button>
           </div>
 
@@ -108,12 +117,12 @@ const Header: React.FC = () => {
 
           <button
             onClick={() => {
-              setShowAuth(true);
               setMenuOpen(false);
+              handleButtonClick();
             }}
             className={`${buttonClasses} text-lg px-8 py-3`}
           >
-            {token ? "Login" : "Signup"}
+            {hasToken ? "Dashboard" : "Signup"}
           </button>
         </nav>
       </div>

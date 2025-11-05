@@ -5,8 +5,9 @@ import {
   User,
   Package,
   Menu,
+  LogOut,
 } from "lucide-react";
-import { NavLink } from "react-router-dom"; // ✅ import NavLink for route-aware navigation
+import { NavLink, useNavigate } from "react-router-dom";
 
 interface NavItem {
   label: string;
@@ -23,16 +24,39 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({
   brand = "Point2",
-  footerText = "© 2025 Point2",
+  footerText = "© 2025 Soccerzone",
   navItems = [
-    { label: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/admindashboard" },
-    { label: "Users", icon: <User size={18} />, path: "/admindashboard/users" },
-    { label: "Calendar", icon: <Calendar size={18} />, path: "/admindashboard/calendar" },
-    { label: "Settings", icon: <Package size={18} />, path: "/admindashboard/settings" },
+    {
+      label: "Dashboard",
+      icon: <LayoutDashboard size={18} />,
+      path: "/admindashboard",
+    },
+    {
+      label: "Users",
+      icon: <User size={18} />,
+      path: "/admindashboard/users",
+    },
+    {
+      label: "Calendar",
+      icon: <Calendar size={18} />,
+      path: "/admindashboard/calendar",
+    },
+    {
+      label: "Settings",
+      icon: <Package size={18} />,
+      path: "/admindashboard/settings",
+    },
   ],
   children,
 }) => {
   const [isHidden, setIsHidden] = useState(false);
+  const navigate = useNavigate();
+
+  // ✅ Logout function
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/"); // redirect to main page
+  };
 
   return (
     <div className="relative flex h-screen font-sans text-gray-900 bg-gradient-to-br from-gray-50 to-green-50">
@@ -54,7 +78,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             <NavLink
               key={item.label}
               to={item.path}
-              end // ✅ ensures exact match for index route (/admindashboard)
+              end
               className={({ isActive }) =>
                 `flex items-center space-x-3 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   isActive
@@ -69,13 +93,24 @@ const Sidebar: React.FC<SidebarProps> = ({
           ))}
         </nav>
 
+        {/* ✅ Logout Button */}
+        <div className="mt-6 px-3">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-red-600 hover:scale-[1.02]"
+          >
+            <LogOut size={16} />
+            Logout
+          </button>
+        </div>
+
         {/* Footer */}
         <div className="mt-auto p-4 border-t border-gray-100 text-center text-sm text-gray-500">
           {footerText}
         </div>
       </aside>
 
-      {/* Toggle Button (Always visible) */}
+      {/* Toggle Button */}
       <button
         onClick={() => setIsHidden(!isHidden)}
         className="fixed top-4 left-4 z-50 bg-emerald-600 text-white p-2 rounded-md shadow-md hover:bg-emerald-700 transition"
@@ -84,7 +119,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <Menu size={18} />
       </button>
 
-      {/* ✅ Page Content */}
+      {/* Page Content */}
       <main className="flex-1 p-6 ml-0 lg:ml-64 transition-all duration-300">
         {children}
       </main>

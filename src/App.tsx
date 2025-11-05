@@ -10,11 +10,11 @@ import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-// ✅ Wrapper component that controls header/footer visibility
+//  Wrapper component that controls header/footer visibility
 const AppContent = () => {
   const location = useLocation();
 
-  // ✅ Define routes where Header/Footer should be hidden
+  //  Define routes where Header/Footer should be hidden
   const hideHeaderPaths = ["/admindashboard"];
 
   // ✅ Check if current path starts with any of these routes
@@ -24,7 +24,7 @@ const AppContent = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* ✅ Conditionally render Header */}
+      {/* Conditionally render Header */}
       {!hideHeader && <Header />}
 
       <main className={`flex-1 ${!hideHeader ? "pt-20" : ""}`}>
@@ -44,7 +44,7 @@ const AppContent = () => {
             }
           />
 
-          {/* ✅ Admin Dashboard (no Header/Footer) */}
+          {/*  Admin Dashboard (no Header/Footer) */}
           <Route
             path="/admindashboard/*"
             element={
@@ -56,13 +56,13 @@ const AppContent = () => {
         </Routes>
       </main>
 
-      {/* ✅ Conditionally render Footer */}
+      {/*  Conditionally render Footer */}
       {!hideHeader && <Footer />}
     </div>
   );
 };
 
-// ✅ Main App wrapper
+// Main App wrapper
 const App = () => (
   <Router>
     <AppContent />

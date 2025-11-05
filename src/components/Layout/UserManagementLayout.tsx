@@ -62,7 +62,7 @@ const UserManagementLayout: React.FC<LayoutProps> = ({ children, title }) => {
 
         {/* Footer */}
         <div className="mt-auto p-4 border-t border-gray-100 text-center text-sm text-gray-500">
-          © 2025 Point2
+          © 2025 Soccerzone
         </div>
       </aside>
 

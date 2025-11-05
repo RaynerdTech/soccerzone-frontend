@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Eye, EyeOff, X } from "lucide-react";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -113,9 +112,9 @@ if (isLogin && data.token) {
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-600 transition-colors"
         >
-          <X size={22} />
+          ✕
         </button>
 
         <div className="text-center mb-6">
@@ -188,7 +187,7 @@ if (isLogin && data.token) {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-green-600 transition-colors"
             >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              {showPassword ? "🙈" : "👁️"}
             </button>
           </div>
           <button

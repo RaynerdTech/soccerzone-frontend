@@ -74,7 +74,7 @@ const AdminDashboard: React.FC = () => {
   return (
   <Sidebar
     brand="AdminPanel"
-    footerText="© 2025 Point2"
+    footerText="© 2025 Soccerzone"
     navItems={[
       { label: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/admindashboard" },
       { label: "Users", icon: <Users size={18} />, path: "/admindashboard/users" },

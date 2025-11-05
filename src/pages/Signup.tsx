@@ -55,8 +55,42 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           : "Registration successful! You can now log in."
       );
 
-      if (data.token) localStorage.setItem("token", data.token);
-      if (isLogin) setTimeout(() => (window.location.href = "/dashboard"), 1500);
+      if (data.token) {
+        // Changed to localStorage
+        localStorage.setItem("token", data.token);
+      }
+
+      // if (isLogin) {
+      //   setTimeout(() => (window.location.href = "/dashboard"), 1500);
+      // }
+
+
+
+      //Decode the token to get the payload
+           function parseJwt(token: string) {
+  try {
+    return JSON.parse(atob(token.split(".")[1]));
+  } catch (e) {
+    return null;
+  }
+}
+
+
+if (isLogin && data.token) {
+  localStorage.setItem("token", data.token);
+
+  const payload = parseJwt(data.token);
+
+  if (payload?.role === "admin" || payload?.role === "super-admin") {
+    window.location.href = "/admindashboard";
+  } else {
+    window.location.href = "/dashboard";
+  }
+}
+
+
+
+
     } catch (err: any) {
       setMessage(err.message || "An error occurred.");
     } finally {

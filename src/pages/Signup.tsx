@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Eye, EyeOff, X } from "lucide-react";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -56,8 +55,42 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           : "Registration successful! You can now log in."
       );
 
-      if (data.token) localStorage.setItem("token", data.token);
-      if (isLogin) setTimeout(() => (window.location.href = "/dashboard"), 1500);
+      if (data.token) {
+        // Changed to localStorage
+        localStorage.setItem("token", data.token);
+      }
+
+      // if (isLogin) {
+      //   setTimeout(() => (window.location.href = "/dashboard"), 1500);
+      // }
+
+
+
+      //Decode the token to get the payload
+           function parseJwt(token: string) {
+  try {
+    return JSON.parse(atob(token.split(".")[1]));
+  } catch (e) {
+    return null;
+  }
+}
+
+
+if (isLogin && data.token) {
+  localStorage.setItem("token", data.token);
+
+  const payload = parseJwt(data.token);
+
+  if (payload?.role === "admin" || payload?.role === "super-admin") {
+    window.location.href = "/admindashboard";
+  } else {
+    window.location.href = "/dashboard";
+  }
+}
+
+
+
+
     } catch (err: any) {
       setMessage(err.message || "An error occurred.");
     } finally {
@@ -79,9 +112,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-600 transition-colors"
         >
-          <X size={22} />
+          ✕
         </button>
 
         <div className="text-center mb-6">
@@ -154,7 +187,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-green-600 transition-colors"
             >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              {showPassword ? "🙈" : "👁️"}
             </button>
           </div>
           <button

@@ -302,7 +302,7 @@ const AvailableSlots: React.FC = () => {
                   <input
                     type="date"
                     value={selectedDate}
-                    min={getMinDate()}
+                  
                     // --- MODIFIED onChange ---
                     onChange={(e) => {
                       localStorage.removeItem("pendingBooking"); // Clear on manual change

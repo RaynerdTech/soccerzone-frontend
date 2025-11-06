@@ -19,31 +19,49 @@ import {
   Mail, 
   Phone,
   Calendar,
-  TrendingUp,
-  MoreVertical
+  TrendingUp
 } from "lucide-react";
 
 // --- TYPE DEFINITIONS ---
+interface Slot {
+  date: string;
+  startTime: string;
+  endTime: string;
+  amount: number;
+  status: string;
+  bookedBy: string | null;
+}
+
 interface Booking {
   bookingId: string;
   totalAmount: number;
   status: string;
   createdAt: string;
-  slots: {
-    date: string;
-    startTime: string;
-    endTime: string;
-    amount: number;
-    status: string;
-  }[];
+  slots: Slot[];
+  paymentRef?: string;
+  ticketId?: string | null;
+  email?: boolean;
 }
 
 interface UserProfile {
-  _id: string;
+  id: string;
   name: string;
   email: string;
   phone: string;
   role: string;
+  createdAt: string;
+}
+
+interface ApiResponse {
+  user: UserProfile;
+  summary: {
+    totalBookings: number;
+    confirmedBookings: number;
+    pendingBookings: number;
+    totalAmount: number;
+    firstBookingDate: string;
+    lastBookingDate: string;
+  };
   bookings: Booking[];
 }
 
@@ -120,7 +138,7 @@ const CustomTooltip: React.FC<any> = ({ active, payload, label }) => {
 
 // --- MAIN DASHBOARD COMPONENT ---
 const Dashboard: React.FC = () => {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [apiData, setApiData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeView, setActiveView] = useState<"overview" | "bookings">("overview");
@@ -150,8 +168,8 @@ const Dashboard: React.FC = () => {
           throw new Error("Failed to load profile data");
         }
         
-        const data = await res.json();
-        setUser(data);
+        const data: ApiResponse = await res.json();
+        setApiData(data);
       } catch (err: any) {
         setError(err.message || "Something went wrong");
         if (err.message.includes("token") || err.message.includes("auth")) {
@@ -165,78 +183,64 @@ const Dashboard: React.FC = () => {
     fetchProfile();
   }, []);
 
+  const user = apiData?.user;
+  const bookings = apiData?.bookings || [];
+  const summary = apiData?.summary;
+
   // Enhanced data processing with proper monthly aggregation and date fixing
-  const { totalBookings, totalSpent, pendingBookings, monthlyData, averageSpending, completedBookings } =
-    useMemo(() => {
-      if (!user) {
-        return {
-          totalBookings: 0,
-          totalSpent: 0,
-          pendingBookings: 0,
-          monthlyData: [],
-          averageSpending: 0,
-          completedBookings: 0
-        };
-      }
+  const { monthlyData, averageSpending } = useMemo(() => {
+    if (!bookings || bookings.length === 0) {
+      return {
+        monthlyData: [],
+        averageSpending: 0
+      };
+    }
 
-      let spent = 0;
-      let pending = 0;
-      let completed = 0;
-      const monthlyAgg: { [key: string]: number } = {};
+    const monthlyAgg: { [key: string]: number } = {};
 
-      user.bookings.forEach((b) => {
-        spent += b.totalAmount;
-        
-        const status = b.status.toLowerCase();
-        if (status === "pending") pending++;
-        if (status === "completed" || status === "confirmed") completed++;
-
-        try {
-          const date = new Date(b.createdAt);
-          if (isNaN(date.getTime())) {
-            console.warn("Invalid date for booking:", b.bookingId);
-            return;
-          }
-          
-          // FIX: Use the actual year from the booking date
-          const monthKey = `${date.getFullYear()}-${(date.getMonth() + 1)
-            .toString()
-            .padStart(2, "0")}`;
-
-          if (!monthlyAgg[monthKey]) {
-            monthlyAgg[monthKey] = 0;
-          }
-          monthlyAgg[monthKey] += b.totalAmount;
-        } catch (e) {
-          console.error("Error processing booking date:", e);
+    bookings.forEach((b) => {
+      try {
+        const date = new Date(b.createdAt);
+        if (isNaN(date.getTime())) {
+          console.warn("Invalid date for booking:", b.bookingId);
+          return;
         }
+        
+        // FIX: Use the actual year from the booking date
+        const monthKey = `${date.getFullYear()}-${(date.getMonth() + 1)
+          .toString()
+          .padStart(2, "0")}`;
+
+        if (!monthlyAgg[monthKey]) {
+          monthlyAgg[monthKey] = 0;
+        }
+        monthlyAgg[monthKey] += b.totalAmount;
+      } catch (e) {
+        console.error("Error processing booking date:", e);
+      }
+    });
+
+    // FIX: Proper date formatting to show correct year
+    const sortedMonthlyData = Object.keys(monthlyAgg)
+      .sort()
+      .map((key) => {
+        const [year, month] = key.split("-");
+        const date = new Date(parseInt(year), parseInt(month) - 1);
+        return {
+          name: date.toLocaleString("default", { 
+            month: "short", 
+            year: "numeric"
+          }),
+          amount: monthlyAgg[key],
+          fullDate: date
+        };
       });
 
-      // FIX: Proper date formatting to show correct year
-      const sortedMonthlyData = Object.keys(monthlyAgg)
-        .sort()
-        .map((key) => {
-          const [year, month] = key.split("-");
-          const date = new Date(parseInt(year), parseInt(month) - 1);
-          return {
-            name: date.toLocaleString("default", { 
-              month: "short", 
-              year: "numeric" // FIX: Use full year to avoid confusion
-            }),
-            amount: monthlyAgg[key],
-            fullDate: date
-          };
-        });
-
-      return {
-        totalBookings: user.bookings.length,
-        totalSpent: spent,
-        pendingBookings: pending,
-        completedBookings: completed,
-        monthlyData: sortedMonthlyData,
-        averageSpending: user.bookings.length > 0 ? spent / user.bookings.length : 0
-      };
-    }, [user]);
+    return {
+      monthlyData: sortedMonthlyData,
+      averageSpending: bookings.length > 0 ? (summary?.totalAmount || 0) / bookings.length : 0
+    };
+  }, [bookings, summary]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -244,168 +248,207 @@ const Dashboard: React.FC = () => {
   };
 
   // ADD THE MISSING renderOverview FUNCTION
- const renderOverview = () => {
-  if (!user) return null; // Add this line
-  
-  return (
-    <>
-      {/* Stat Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard
-          title="Total Spent"
-          value={`₦${totalSpent.toLocaleString()}`}
-          icon={<DollarSign size={20} />}
-          description="All-time spending"
-        />
-        <StatCard
-          title="Total Bookings"
-          value={totalBookings}
-          icon={<Hash size={20} />}
-          description="Completed sessions"
-        />
-        <StatCard
-          title="Pending"
-          value={pendingBookings}
-          icon={<Clock size={20} />}
-          description="Awaiting confirmation"
-        />
-        <StatCard
-          title="Avg. Booking"
-          value={`₦${Math.round(averageSpending).toLocaleString()}`}
-          icon={<TrendingUp size={20} />}
-          description="Per session"
-        />
-      </div>
+  const renderOverview = () => {
+    if (!user || !summary) return null;
+    
+    return (
+      <>
+        {/* Stat Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            title="Total Spent"
+            value={`₦${summary.totalAmount.toLocaleString()}`}
+            icon={<DollarSign size={20} />}
+            description="All-time spending"
+          />
+          <StatCard
+            title="Total Bookings"
+            value={summary.totalBookings}
+            icon={<Hash size={20} />}
+            description="All sessions"
+          />
+          <StatCard
+            title="Pending"
+            value={summary.pendingBookings}
+            icon={<Clock size={20} />}
+            description="Awaiting confirmation"
+          />
+          <StatCard
+            title="Avg. Booking"
+            value={`₦${Math.round(averageSpending).toLocaleString()}`}
+            icon={<TrendingUp size={20} />}
+            description="Per session"
+          />
+        </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Chart Section */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Spending Overview
-            </h2>
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <Calendar size={16} />
-              <span>All months</span>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Chart Section */}
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Spending Overview
+              </h2>
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <Calendar size={16} />
+                <span>All months</span>
+              </div>
+            </div>
+            
+            {monthlyData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={320}>
+                <BarChart
+                  data={monthlyData}
+                  margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                >
+                  <defs>
+                    <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.2} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis
+                    dataKey="name"
+                    stroke="#6b7280"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    stroke="#6b7280"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `₦${value / 1000}k`}
+                  />
+                  <Tooltip
+                    content={<CustomTooltip />}
+                    cursor={{ fill: "rgba(16, 185, 129, 0.05)" }}
+                  />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="#f3f4f6"
+                    vertical={false}
+                  />
+                  <Bar
+                    dataKey="amount"
+                    radius={[4, 4, 0, 0]}
+                  >
+                    {monthlyData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill="url(#colorAmount)" />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-80 text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <TrendingUp size={24} className="text-gray-400" />
+                </div>
+                <p className="text-gray-500 font-medium">No spending data yet</p>
+                <p className="text-sm text-gray-400 mt-1">Your spending history will appear here</p>
+              </div>
+            )}
+          </div>
+
+          {/* Profile Section */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Profile Information
+              </h2>
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-2 text-gray-500 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-50"
+                title="Logout"
+              >
+                <LogOut size={16} />
+                <span className="text-sm font-medium">Logout</span>
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50">
+                <User size={18} className="text-gray-400" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                  <p className="text-xs text-gray-500">Full Name</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50">
+                <Mail size={18} className="text-gray-400" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{user.email}</p>
+                  <p className="text-xs text-gray-500">Email Address</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50">
+                <Phone size={18} className="text-gray-400" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{user.phone}</p>
+                  <p className="text-xs text-gray-500">Phone Number</p>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
+
+        {/* Recent Bookings Preview */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-8">
+          <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Recent Bookings
+            </h2>
+            <button 
+              onClick={() => setActiveView("bookings")}
+              className="text-sm text-green-600 hover:text-green-700 font-medium"
+            >
+              View All →
+            </button>
+          </div>
           
-          {monthlyData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={320}>
-              <BarChart
-                data={monthlyData}
-                margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-              >
-                <defs>
-                  <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.2} />
-                  </linearGradient>
-                </defs>
-                <XAxis
-                  dataKey="name"
-                  stroke="#6b7280"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="#6b7280"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => `₦${value / 1000}k`}
-                />
-                <Tooltip
-                  content={<CustomTooltip />}
-                  cursor={{ fill: "rgba(16, 185, 129, 0.05)" }}
-                />
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="#f3f4f6"
-                  vertical={false}
-                />
-                <Bar
-                  dataKey="amount"
-                  radius={[4, 4, 0, 0]}
-                >
-                  {monthlyData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill="url(#colorAmount)" />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-80 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <TrendingUp size={24} className="text-gray-400" />
+          {bookings.length > 0 ? (
+            <div className="p-6">
+              <div className="space-y-4">
+                {bookings.slice(0, 3).map((booking) => (
+                  <BookingCard key={booking.bookingId} booking={booking} />
+                ))}
               </div>
-              <p className="text-gray-500 font-medium">No spending data yet</p>
-              <p className="text-sm text-gray-400 mt-1">Your spending history will appear here</p>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar size={24} className="text-gray-400" />
+              </div>
+              <p className="text-gray-500 font-medium">No bookings yet</p>
+              <p className="text-sm text-gray-400 mt-1">Your bookings will appear here</p>
             </div>
           )}
         </div>
+      </>
+    );
+  };
 
-        {/* Profile Section */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Profile Information
-            </h2>
-            <button
-              onClick={handleLogout}
-              className="flex items-center space-x-2 text-gray-500 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-50"
-              title="Logout"
-            >
-              <LogOut size={16} />
-              <span className="text-sm font-medium">Logout</span>
-            </button>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50">
-              <User size={18} className="text-gray-400" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                <p className="text-xs text-gray-500">Full Name</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50">
-              <Mail size={18} className="text-gray-400" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">{user.email}</p>
-                <p className="text-xs text-gray-500">Email Address</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50">
-              <Phone size={18} className="text-gray-400" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">{user.phone}</p>
-                <p className="text-xs text-gray-500">Phone Number</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Bookings Preview */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-8">
+  const renderBookings = () => {
+    if (!bookings) return null;
+    
+    return (
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
           <h2 className="text-xl font-semibold text-gray-900">
-            Recent Bookings
+            All Bookings ({bookings.length})
           </h2>
           <button 
-            onClick={() => setActiveView("bookings")}
+            onClick={() => setActiveView("overview")}
             className="text-sm text-green-600 hover:text-green-700 font-medium"
           >
-            View All →
+            ← Back to Overview
           </button>
         </div>
         
-        {user.bookings.length > 0 ? (
+        {bookings.length > 0 ? (
           <div className="p-6">
             <div className="space-y-4">
-              {user.bookings.slice(0, 3).map((booking) => (
+              {bookings.map((booking) => (
                 <BookingCard key={booking.bookingId} booking={booking} />
               ))}
             </div>
@@ -420,47 +463,8 @@ const Dashboard: React.FC = () => {
           </div>
         )}
       </div>
-    </>
-  );
-};
-
-const renderBookings = () => {
-  if (!user) return null; // Add this line
-  
-  return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-900">
-          All Bookings ({user.bookings.length})
-        </h2>
-        <button 
-          onClick={() => setActiveView("overview")}
-          className="text-sm text-green-600 hover:text-green-700 font-medium"
-        >
-          ← Back to Overview
-        </button>
-      </div>
-      
-      {user.bookings.length > 0 ? (
-        <div className="p-6">
-          <div className="space-y-4">
-            {user.bookings.map((booking) => (
-              <BookingCard key={booking.bookingId} booking={booking} />
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Calendar size={24} className="text-gray-400" />
-          </div>
-          <p className="text-gray-500 font-medium">No bookings yet</p>
-          <p className="text-sm text-gray-400 mt-1">Your bookings will appear here</p>
-        </div>
-      )}
-    </div>
-  );
-};
+    );
+  };
 
   // --- RENDER STATES ---
   if (loading) {
@@ -535,7 +539,7 @@ const renderBookings = () => {
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
-            Bookings ({user.bookings.length})
+            Bookings ({bookings.length})
           </button>
         </div>
 

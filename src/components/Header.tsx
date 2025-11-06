@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
-import AuthModal from "../pages/Signup"; // ✅ import your modal
+import AuthModal from "../pages/Signup";
 
 const navItems = [
   { name: "Home", path: "/" },
@@ -9,40 +9,77 @@ const navItems = [
   { name: "Event", path: "/event" },
 ];
 
+// Helper function to decode JWT safely
+const parseJwt = (token: string | null) => {
+  if (!token) return null;
+  try {
+    return JSON.parse(atob(token.split(".")[1]));
+  } catch (error) {
+    console.error("Invalid token format");
+    return null;
+  }
+};
+
+// Get user role from token payload
+const getUserRole = (): string | null => {
+  const token = localStorage.getItem("token");
+  const payload = parseJwt(token);
+  return payload?.role || null;
+};
+
 const Header: React.FC = () => {
   const navigate = useNavigate();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [hasToken, setHasToken] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
 
   const SCROLL_THRESHOLD = 20;
 
+  // ✅ Check for token and set user role
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const userRole = getUserRole();
     setHasToken(!!token);
+    setRole(userRole);
   }, []);
 
+  // ✅ Detect scroll to apply header blur/background
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > SCROLL_THRESHOLD);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > SCROLL_THRESHOLD);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // ✅ Prevent body scroll when menu or modal is open
   useEffect(() => {
     document.body.style.overflow = menuOpen || showAuth ? "hidden" : "unset";
   }, [menuOpen, showAuth]);
 
+  // ✅ Handle main button (Dashboard or Signup)
   const handleButtonClick = () => {
     if (hasToken) {
-      navigate("/dashboard"); // ✅ go to dashboard if token exists
+      if (role === "admin" || role === "super-admin") {
+        navigate("/admindashboard");
+      } else {
+        navigate("/dashboard");
+      }
     } else {
-      setShowAuth(true); // ✅ open modal if no token
+      setShowAuth(true);
     }
   };
 
+  // ✅ Optional logout handler
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setHasToken(false);
+    setRole(null);
+    navigate("/");
+  };
+
+  // === Dynamic Classes ===
   const headerScrolled = isScrolled || menuOpen;
   const headerBgClass = headerScrolled
     ? "bg-white/90 backdrop-blur-md shadow-lg"
@@ -66,7 +103,7 @@ const Header: React.FC = () => {
             />
           </Link>
 
-          {/* === Desktop Nav === */}
+          {/* === Desktop Navigation === */}
           <nav className="hidden md:flex space-x-8">
             {navItems.map((item) => (
               <Link
@@ -80,14 +117,30 @@ const Header: React.FC = () => {
             ))}
           </nav>
 
-          {/* === Button (Desktop) === */}
-          <div className="hidden md:block">
-            <button onClick={handleButtonClick} className={buttonClasses}>
-              {hasToken ? "Dashboard" : "Signup"}
-            </button>
+          {/* === Desktop Buttons === */}
+          <div className="hidden md:flex items-center space-x-4">
+            {hasToken ? (
+              <>
+                <button onClick={handleButtonClick} className={buttonClasses}>
+                  {role === "admin" || role === "super-admin"
+                    ? "Admin Dashboard"
+                    : "Dashboard"}
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-600 hover:text-red-500 font-medium"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <button onClick={handleButtonClick} className={buttonClasses}>
+                Signup
+              </button>
+            )}
           </div>
 
-          {/* === Hamburger Icon (Mobile) === */}
+          {/* === Mobile Menu Button === */}
           <button
             className={`md:hidden relative z-[60] transition-colors duration-300 ${textColorClass}`}
             onClick={() => setMenuOpen(!menuOpen)}
@@ -122,8 +175,24 @@ const Header: React.FC = () => {
             }}
             className={`${buttonClasses} text-lg px-8 py-3`}
           >
-            {hasToken ? "Dashboard" : "Signup"}
+            {hasToken
+              ? role === "admin" || role === "super-admin"
+                ? "Admin Dashboard"
+                : "Dashboard"
+              : "Signup"}
           </button>
+
+          {hasToken && (
+            <button
+              onClick={() => {
+                setMenuOpen(false);
+                handleLogout();
+              }}
+              className="text-red-600 font-medium text-lg mt-4"
+            >
+              Logout
+            </button>
+          )}
         </nav>
       </div>
 

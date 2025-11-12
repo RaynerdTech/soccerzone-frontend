@@ -1,4 +1,4 @@
-import React from "react";
+// import React from "react";
 import AvailableSlots from "../components/AvailableSlots";
 
 const Event = () => {

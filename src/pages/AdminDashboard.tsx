@@ -69,9 +69,9 @@ const AdminDashboard: React.FC = () => {
     console.log("Searching:", query);
   };
 
-  const handleEditBooking = (userId: string) => {
-    console.log("Editing booking for user:", userId);
-  };
+  // const handleEditBooking = (userId: string) => {
+  //   console.log("Editing booking for user:", userId);
+  // };
 
   return (
     <Sidebar

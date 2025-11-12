@@ -43,7 +43,6 @@ const UsersPage: React.FC = () => {
       <UserSearchTable
         users={users}
         onSearch={(query) => console.log("Searching:", query)}
-        onEditBooking={(id) => console.log("Editing booking for:", id)}
       />
       {loading && <p className="text-gray-500 mt-4">Loading users...</p>}
     </div>

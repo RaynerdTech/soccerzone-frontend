@@ -123,10 +123,10 @@ const AvailableSlots: React.FC = () => {
     });
   };
 
-  const getMinDate = () => {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
-  };
+  // const getMinDate = () => {
+  //   const today = new Date();
+  //   return today.toISOString().split("T")[0];
+  // };
 
   // --- MODIFIED toggleSlotSelection ---
   const toggleSlotSelection = (slot: Slot) => {

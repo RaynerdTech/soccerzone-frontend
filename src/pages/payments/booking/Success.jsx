@@ -215,7 +215,7 @@ export default function PaymentSuccess() {
           <h3 className="text-xl font-semibold text-gray-800 mb-2">Payment Verification Failed</h3>
           <p className="text-gray-600 mb-6">{statusMessage}</p>
           <button
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/")}
             className="w-full bg-green-900 hover:bg-green-800 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
           >
             Go to Dashboard

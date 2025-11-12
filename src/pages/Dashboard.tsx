@@ -97,27 +97,27 @@ const StatCard: React.FC<{
 /**
  * Enhanced colored badge with better visual hierarchy
  */
-const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
-  const lowerStatus = status.toLowerCase();
-  const statusConfig = {
-    completed: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200" },
-    confirmed: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200" },
-    pending: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200" },
-    cancelled: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" },
-    default: { bg: "bg-gray-50", text: "text-gray-700", border: "border-gray-200" }
-  };
+// const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
+//   const lowerStatus = status.toLowerCase();
+//   const statusConfig = {
+//     completed: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200" },
+//     confirmed: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200" },
+//     pending: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200" },
+//     cancelled: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" },
+//     default: { bg: "bg-gray-50", text: "text-gray-700", border: "border-gray-200" }
+//   };
 
-  const config = statusConfig[lowerStatus as keyof typeof statusConfig] || statusConfig.default;
+//   const config = statusConfig[lowerStatus as keyof typeof statusConfig] || statusConfig.default;
 
-  return (
-    <span
-      className={`px-3 py-1.5 rounded-full text-xs font-medium border ${config.bg} ${config.text} ${config.border} capitalize inline-flex items-center`}
-    >
-      <span className="w-1.5 h-1.5 rounded-full bg-current mr-2 opacity-70"></span>
-      {status}
-    </span>
-  );
-};
+//   return (
+//     <span
+//       className={`px-3 py-1.5 rounded-full text-xs font-medium border ${config.bg} ${config.text} ${config.border} capitalize inline-flex items-center`}
+//     >
+//       <span className="w-1.5 h-1.5 rounded-full bg-current mr-2 opacity-70"></span>
+//       {status}
+//     </span>
+//   );
+// };
 
 /**
  * Enhanced custom tooltip
@@ -334,7 +334,7 @@ const Dashboard: React.FC = () => {
                     dataKey="amount"
                     radius={[4, 4, 0, 0]}
                   >
-                    {monthlyData.map((entry, index) => (
+                    {monthlyData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill="url(#colorAmount)" />
                     ))}
                   </Bar>

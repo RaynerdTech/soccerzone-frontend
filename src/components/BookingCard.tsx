@@ -450,6 +450,6 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking }) => {
       )}
     </div>
   );
-};
-
+};        
+      
 export default BookingCard;

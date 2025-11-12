@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:4000/api", // your API base URL
+  baseURL: "https://soccerzone-backend.onrender.com/api", // your API base URL
   headers: {
     "Content-Type": "application/json",
   },

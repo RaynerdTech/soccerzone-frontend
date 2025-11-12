@@ -69,7 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <h1 className="text-xl font-bold text-emerald-600">{brand}</h1>
+          <h1 className="text-xl font-bold text-emerald-600 ml-10">{brand}</h1>
         </div>
 
         {/* Navigation */}
@@ -120,7 +120,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       </button>
 
       {/* Page Content */}
-      <main className="flex-1 p-6 ml-0 lg:ml-64 transition-all duration-300">
+      <main className="flex-1 px-2 py-6 ml-0 lg:ml-64 transition-all duration-300">
         {children}
       </main>
     </div>

@@ -5,12 +5,14 @@ import UserSearchTable from "../components/AdminDashboard/UserSearchTable";
 import Sidebar from "../components/Layout/Sidebar"; // ✅ import reusable sidebar
 import UsersPage from "./admin/UsersPage";
 import Slots from "./admin/Slots";
+import BookingDetails from "./admin/bookingdetails"; // ✅ 1. Import your new component
 
 import {
   LayoutDashboard,
   Users,
   Settings,
-  Timer
+  Timer,
+  Ticket, // ✅ 2. Import the Ticket icon
 } from "lucide-react";
 import { getUsers } from "../api/admindashboard/users";
 
@@ -72,50 +74,72 @@ const AdminDashboard: React.FC = () => {
   };
 
   return (
-  <Sidebar
-    brand="AdminPanel"
-    footerText="© 2025 Soccerzone"
-    navItems={[
-      { label: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/admindashboard" },
-      { label: "Users", icon: <Users size={18} />, path: "/admindashboard/users" },
-      { label: "Slots", icon: <Timer size={18} />, path: "/admindashboard/slots" },
-      { label: "Settings", icon: <Settings size={18} />, path: "/admindashboard/settings" },
-    ]}
-  >
-    {/* ✅ Nested routes inside Sidebar layout */}
-    <Routes>
-      {/* --- Dashboard Home --- */}
-      <Route
-        index
-        element={
-          <div className="p-6">
-            {/* Stats Cards */}
-            <StatsGrid data={dummyStats} />
+    <Sidebar
+      brand="AdminPanel"
+      footerText="© 2025 Soccerzone"
+      navItems={[
+        {
+          label: "Dashboard",
+          icon: <LayoutDashboard size={18} />,
+          path: "/admindashboard",
+        },
+        { label: "Users", icon: <Users size={18} />, path: "/admindashboard/users" },
+        { label: "Slots", icon: <Timer size={18} />, path: "/admindashboard/slots" },
+        // ✅ 3. Update the "Ticket" nav item to use the new path and icon
+        {
+          label: "Bookings",
+          icon: <Ticket size={18} />,
+          path: "/admindashboard/booking-details",
+        },
+        {
+          label: "Settings",
+          icon: <Settings size={18} />,
+          path: "/admindashboard/settings",
+        },
+      ]}
+    >
+      {/* ✅ Nested routes inside Sidebar layout */}
+      <Routes>
+        {/* --- Dashboard Home --- */}
+        <Route
+          index
+          element={
+            <div className="p-2">
+              {/* Stats Cards */}
+              <StatsGrid data={dummyStats} />
 
-            {/* User Table */}
-            <h2 className="text-xl font-bold mt-6 mb-4">User Management</h2>
-            <UserSearchTable
-              users={users}
-              onSearch={handleSearch}
-              onEditBooking={handleEditBooking}
-            />
+              {/* User Table */}
+              <h2 className="text-xl font-bold mt-6 mb-4">User Management</h2>
+              <UserSearchTable
+                users={users}
+                onSearch={handleSearch}
+             
+              />
 
-            {loading && <p className="text-gray-500 mt-4">Loading users...</p>}
-          </div>
-        }
-      />
+              {loading && (
+                <p className="text-gray-500 mt-4">Loading users...</p>
+              )}
+            </div>
+          }
+        />
 
-      {/* --- Users Page --- */}
-      <Route path="users" element={<UsersPage />} />
+        {/* --- Users Page --- */}
+        <Route path="users" element={<UsersPage />} />
 
-      {/* --- Calendar Placeholder --- */}
-      <Route path="slots" element={<Slots/>} />
+        {/* --- Calendar Placeholder --- */}
+        <Route path="slots" element={<Slots />} />
 
-      {/* --- Settings Placeholder --- */}
-      <Route path="settings" element={<div className="p-6">⚙️ Settings Page</div>} />
-    </Routes>
-  </Sidebar>
-);
+        {/* ✅ 4. Add the new Route for your booking details page */}
+        <Route path="booking-details" element={<BookingDetails />} />
+
+        {/* --- Settings Placeholder --- */}
+        <Route
+          path="settings"
+          element={<div className="p-6">⚙️ Settings Page</div>}
+        />
+      </Routes>
+    </Sidebar>
+  );
 };
 
 export default AdminDashboard;

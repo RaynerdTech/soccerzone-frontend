@@ -214,12 +214,31 @@ export default function PaymentSuccess() {
           </div>
           <h3 className="text-xl font-semibold text-gray-800 mb-2">Payment Verification Failed</h3>
           <p className="text-gray-600 mb-6">{statusMessage}</p>
-          <button
-            onClick={() => navigate("/")}
-            className="w-full bg-green-900 hover:bg-green-800 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
-          >
-            Go to Dashboard
-          </button>
+       <button
+  onClick={() => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      if (payload?.role === "admin" || payload?.role === "super-admin") {
+        navigate("/admindashboard");
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      console.error("Error decoding token:", err);
+      navigate("/dashboard");
+    }
+  }}
+  className="bg-white hover:bg-gray-50 text-gray-800 font-medium py-3 px-8 rounded-lg border border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+>
+  Back to Dashboard
+</button>
+
         </div>
       </div>
     );
@@ -338,12 +357,31 @@ export default function PaymentSuccess() {
             )}
           </button>
           
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="bg-white hover:bg-gray-50 text-gray-800 font-medium py-3 px-8 rounded-lg border border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
-          >
-            Back to Dashboard
-          </button>
+         <button
+  onClick={() => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      if (payload?.role === "admin" || payload?.role === "super-admin") {
+        navigate("/admindashboard");
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      console.error("Error decoding token:", err);
+      navigate("/dashboard");
+    }
+  }}
+  className="bg-white hover:bg-gray-50 text-gray-800 font-medium py-3 px-8 rounded-lg border border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+>
+  Back to Dashboard
+</button>
+
         </div>
 
         {/* Fallback message */}

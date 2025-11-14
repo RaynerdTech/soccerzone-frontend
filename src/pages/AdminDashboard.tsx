@@ -6,7 +6,7 @@ import Sidebar from "../components/Layout/Sidebar"; // ✅ import reusable sideb
 import UsersPage from "./admin/UsersPage";
 import Slots from "./admin/Slots";
 import BookingDetails from "./admin/bookingdetails"; // ✅ 1. Import your new component
-import SlotSettings from "./admin/settings";
+import SlotSettings from "./admin/Settings";
 
 import {
   LayoutDashboard,

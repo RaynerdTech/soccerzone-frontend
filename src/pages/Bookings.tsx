@@ -1,7 +1,7 @@
 // import React from "react";
 import AvailableSlots from "../components/AvailableSlots";
 
-const Event = () => {
+const Bookings = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-16 px-4">
       <div className="max-w-5xl mx-auto text-center">
@@ -20,4 +20,4 @@ const Event = () => {
   );  
 };
 
-export default Event;
+export default Bookings;

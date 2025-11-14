@@ -6,7 +6,7 @@ import AuthModal from "../pages/Signup";
 const navItems = [
   { name: "Home", path: "/" },
   { name: "About", path: "/about" },
-  { name: "Event", path: "/event" },
+  { name: "Bookings", path: "/bookings" },
 ];
 
 // Helper function to decode JWT safely

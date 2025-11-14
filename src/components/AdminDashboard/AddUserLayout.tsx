@@ -38,7 +38,8 @@ const AddUserLayout: React.FC<AddUserLayoutProps> = ({ onUserAdded }) => {
         return;
       }
 
-      const res = await axios.post(
+      // --- FIX: Removed 'const res =' as it was unused ---
+      await axios.post(
         "https://soccerzone-backend.onrender.com/api/users",
         form,
         {

@@ -3,7 +3,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import About from "./pages/About";
-import Event from "./pages/Event";
+import Bookings from "./pages/Bookings";
 import Signup from "./pages/Signup";
 import Success from "./pages/payments/booking/Success";
 import Dashboard from "./pages/Dashboard";
@@ -31,7 +31,7 @@ const AppContent = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
-          <Route path="/event" element={<Event />} />
+          <Route path="/bookings" element={<Bookings />} />
           <Route path="/signup" element={<Signup isOpen={true} onClose={() => {}} />} />
           <Route path="/payments/booking/success" element={<Success />} />
 

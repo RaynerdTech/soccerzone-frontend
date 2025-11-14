@@ -30,7 +30,7 @@ const About: React.FC = () => {
           initial={{ opacity: 0, x: -40 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
         >
           <h3 className="text-sm uppercase tracking-widest text-green-500 mb-3">
             About Us
@@ -265,7 +265,7 @@ const About: React.FC = () => {
           </motion.div>
 
           <motion.img
-            src="./team-photo.jpg"
+            src="./szteam.jpg"
             alt="The SoccerZone Team"
             className="rounded-2xl shadow-lg w-full h-[300px] md:h-[400px] object-cover order-1 md:order-2"
             initial={{ opacity: 0, x: 40 }}

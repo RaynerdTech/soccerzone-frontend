@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import UserSearchTable from "../../components/AdminDashboard/UserSearchTable";
+import AddUserLayout from "../../components/AdminDashboard/AddUserLayout";
 import { getUsers } from "../../api/admindashboard/users";
 
 interface User {
@@ -39,6 +40,9 @@ const UsersPage: React.FC = () => {
 
   return (
     <div className="p-6">
+       <div className="flex mb-4">
+      <AddUserLayout onUserAdded={() => console.log("User Added!")} />
+        </div>
       <h2 className="text-xl font-bold mb-4">User Management</h2>
       <UserSearchTable
         users={users}

@@ -135,7 +135,7 @@ const Header: React.FC = () => {
               </>
             ) : (
               <button onClick={handleButtonClick} className={buttonClasses}>
-                Signup
+                Sign-in
               </button>
             )}
           </div>

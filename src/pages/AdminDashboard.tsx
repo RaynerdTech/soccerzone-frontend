@@ -6,6 +6,7 @@ import Sidebar from "../components/Layout/Sidebar"; // ✅ import reusable sideb
 import UsersPage from "./admin/UsersPage";
 import Slots from "./admin/Slots";
 import BookingDetails from "./admin/bookingdetails"; // ✅ 1. Import your new component
+import SlotSettings from "./admin/settings";
 
 import {
   LayoutDashboard,
@@ -133,10 +134,8 @@ const AdminDashboard: React.FC = () => {
         <Route path="booking-details" element={<BookingDetails />} />
 
         {/* --- Settings Placeholder --- */}
-        <Route
-          path="settings"
-          element={<div className="p-6">⚙️ Settings Page</div>}
-        />
+         <Route path="settings" element={<SlotSettings/>} />
+        
       </Routes>
     </Sidebar>
   );

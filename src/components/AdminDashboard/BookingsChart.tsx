@@ -139,10 +139,10 @@ const DashboardChart: React.FC = () => {
   }, [startDate, endDate, bookings, users]);
 
   // Stats
-  const totalRevenue = filteredBookings.reduce(
-    (sum, b) => sum + b.totalAmount,
-    0
-  );
+//   const totalRevenue = filteredBookings.reduce(
+//     (sum, b) => sum + b.totalAmount,
+//     0
+//   );
 
   const pendingRevenue = filteredBookings
     .filter((b) => b.status !== "confirmed")

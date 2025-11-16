@@ -233,7 +233,7 @@ const AvailableSlots: React.FC = () => {
       className="min-h-screen py-16 lg:py-24 bg-white"
       id="available-slots"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto sm:px-6 lg:px-8">
         {/* Header Section (Unchanged) */}
         <motion.div
           className="max-w-3xl mb-12 lg:mb-16"

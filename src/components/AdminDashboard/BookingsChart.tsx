@@ -425,10 +425,9 @@ useEffect(() => {
           </div>
         </div>
         
-       <div className="h-48 xs:h-56 sm:h-64 md:h-80 lg:h-96">
-  <Bar key={windowWidth} data={chartData} options={chartOptions} />
-</div>
-
+        <div className="h-48 xs:h-56 sm:h-64 md:h-80 lg:h-96">
+         <Bar key={windowWidth} data={chartData} options={chartOptions} />
+        </div>
       </div>
     </div>
   );

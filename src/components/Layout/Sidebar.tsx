@@ -59,7 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <div className="relative flex h-screen font-sans text-gray-900 bg-gradient-to-br from-gray-50 to-green-50">
+    <div className="relative flex h-full font-sans text-gray-900 bg-gradient-to-br from-gray-50 to-green-50 overflow-x-hidden">
       {/* Sidebar */}
       <aside
         id="sidebar"

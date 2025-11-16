@@ -23,7 +23,7 @@ const AppContent = () => {
   );
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col m-h-screen">
       {/* Conditionally render Header */}
       {!hideHeader && <Header />}
 

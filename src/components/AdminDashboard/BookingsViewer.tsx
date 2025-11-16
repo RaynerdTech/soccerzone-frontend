@@ -230,7 +230,7 @@ const AvailableSlots: React.FC = () => {
 
   return (
     <section
-      className="min-h-screen py-16 lg:py-24 bg-white"
+      className="min-h-screen py-16 lg:py-24"
       id="available-slots"
     >
       <div className="mx-auto sm:px-6 lg:px-8">
@@ -290,7 +290,7 @@ const AvailableSlots: React.FC = () => {
             transition={{ duration: 0.4, delay: 0.15 }}
             className="lg:col-span-2"
           >
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-6">
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
               <label className="block text-sm font-semibold text-slate-900 mb-3">
                 Select Date
               </label>

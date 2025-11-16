@@ -131,7 +131,7 @@ const AllBookings: React.FC = () => {
 
   // --- 6. Render the search bar and the list of bookings ---
   return (
-    <section className="max-w-6xl mx-auto py-12 px-4">
+    <section className="max-w-6xl mx-auto py-12">
       <h1 className="text-3xl font-bold text-slate-900 mb-6">All Bookings</h1>
 
       {/* --- Search Bar --- */}

@@ -138,21 +138,15 @@ const DashboardChart: React.FC = () => {
     }
   }, [startDate, endDate, bookings, users]);
 
-    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
-useEffect(() => {
-  const handleResize = () => setWindowWidth(window.innerWidth);
-  window.addEventListener("resize", handleResize);
-  return () => window.removeEventListener("resize", handleResize);
-}, []);
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-    
   // Stats
-//   const totalRevenue = filteredBookings.reduce(
-//     (sum, b) => sum + b.totalAmount,
-//     0
-//   );
-
   const pendingRevenue = filteredBookings
     .filter((b) => b.status !== "confirmed")
     .reduce((sum, b) => sum + b.totalAmount, 0);
@@ -293,52 +287,69 @@ useEffect(() => {
         </p>
       </div>
 
-      {/* Date Filters */}
+      {/* Date Filters - Improved for Mobile */}
       <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-3 sm:p-4 md:p-6 mb-4 sm:mb-6">
-        <div className="flex flex-col md:flex-row md:items-end gap-3 sm:gap-4 md:gap-6">
-          <div className="flex-1">
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-              Date Range
-            </label>
-            <div className="flex flex-col xs:flex-row gap-2 sm:gap-3 md:gap-4">
-              <div className="flex-1 min-w-0">
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                />
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+            <div className="flex-1">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                Date Range
+              </label>
+              <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
+                {/* Start Date Input */}
+                <div className="flex flex-col">
+                  <span className="text-xs text-gray-500 mb-1">From</span>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full px-3 py-2.5 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    style={{
+                      WebkitAppearance: 'none',
+                      minHeight: '44px' // Better touch target for iOS
+                    }}
+                  />
+                </div>
+                
+                {/* End Date Input */}
+                <div className="flex flex-col">
+                  <span className="text-xs text-gray-500 mb-1">To</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full px-3 py-2.5 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    style={{
+                      WebkitAppearance: 'none',
+                      minHeight: '44px' // Better touch target for iOS
+                    }}
+                  />
+                </div>
               </div>
             </div>
+            
+            {/* Reset Button */}
+            <button
+              onClick={handleResetFilters}
+              disabled={!startDate && !endDate}
+              className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap min-h-[44px]"
+            >
+              Reset Filters
+            </button>
           </div>
           
-          <button
-            onClick={handleResetFilters}
-            disabled={!startDate && !endDate}
-            className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
-          >
-            Reset Filters
-          </button>
+          {/* Date Range Summary */}
+          {(startDate || endDate) && (
+            <div className="mt-2 p-3 bg-blue-50 rounded-lg">
+              <p className="text-xs sm:text-sm text-blue-700">
+                Showing data from{" "}
+                <span className="font-semibold">
+                  {startDate || "the beginning"} to {endDate || "now"}
+                </span>
+              </p>
+            </div>
+          )}
         </div>
-        
-        {(startDate || endDate) && (
-          <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-blue-50 rounded-lg">
-            <p className="text-xs sm:text-sm text-blue-700">
-              Showing data from{" "}
-              <span className="font-semibold">
-                {startDate || "the beginning"} to {endDate || "now"}
-              </span>
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Summary Cards - Mobile First Approach */}
@@ -370,8 +381,8 @@ useEffect(() => {
               <p className="text-xs sm:text-sm text-gray-600 mt-1 truncate">Confirmed Revenue</p>
             </div>
             <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
-  <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-</div>
+              <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            </div>
           </div>
           <p className="text-xs text-blue-600 mt-2 truncate">
             Full: {formatFullCurrency(confirmedRevenue)}
@@ -408,7 +419,7 @@ useEffect(() => {
               <p className="text-xs sm:text-sm text-gray-600 mt-1 truncate">Total Users</p>
             </div>
             <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-red-500 rounded-lg flex items-center justify-center flex-shrink-0 ml-2">
-             <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
           </div>
         </div>
@@ -426,7 +437,7 @@ useEffect(() => {
         </div>
         
         <div className="h-48 xs:h-56 sm:h-64 md:h-80 lg:h-96">
-         <Bar key={windowWidth} data={chartData} options={chartOptions} />
+          <Bar key={windowWidth} data={chartData} options={chartOptions} />
         </div>
       </div>
     </div>

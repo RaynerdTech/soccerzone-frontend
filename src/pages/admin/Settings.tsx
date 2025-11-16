@@ -154,7 +154,7 @@ const SlotSettings: React.FC = () => {
 
   /** 🔹 UI */
   return (
-    <section className="max-w-4xl mx-auto py-12 px-4">
+    <section className="max-w-4xl mx-auto py-12">
       <h1 className="text-3xl font-bold text-slate-900 mb-6">Slot Settings</h1>
       <p className="text-slate-600 mb-10">
         Manage system-wide slot configuration, pricing, and active status.

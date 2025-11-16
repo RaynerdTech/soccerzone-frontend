@@ -138,6 +138,15 @@ const DashboardChart: React.FC = () => {
     }
   }, [startDate, endDate, bookings, users]);
 
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+useEffect(() => {
+  const handleResize = () => setWindowWidth(window.innerWidth);
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
+    
   // Stats
 //   const totalRevenue = filteredBookings.reduce(
 //     (sum, b) => sum + b.totalAmount,
@@ -416,9 +425,10 @@ const DashboardChart: React.FC = () => {
           </div>
         </div>
         
-        <div className="h-48 xs:h-56 sm:h-64 md:h-80 lg:h-96">
-          <Bar data={chartData} options={chartOptions} />
-        </div>
+       <div className="h-48 xs:h-56 sm:h-64 md:h-80 lg:h-96">
+  <Bar key={windowWidth} data={chartData} options={chartOptions} />
+</div>
+
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import AuthModal from "../pages/Signup";
 
 const navItems = [
@@ -135,7 +135,7 @@ const Header: React.FC = () => {
               </>
             ) : (
               <button onClick={handleButtonClick} className={buttonClasses}>
-                Sign-in
+                Login
               </button>
             )}
           </div>
@@ -179,7 +179,7 @@ const Header: React.FC = () => {
               ? role === "admin" || role === "super-admin"
                 ? "Admin Dashboard"
                 : "Dashboard"
-              : "Signup"}
+              : "Login"}
           </button>
 
           {hasToken && (

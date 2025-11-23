@@ -1,5 +1,8 @@
+
+
+
+import { Clock, List, Loader2, Save, ToggleLeft, ToggleRight } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { Clock, ToggleLeft, ToggleRight, Save, Loader2, List } from "lucide-react";
 
 interface SlotSettings {
   globalEnabled: boolean;
@@ -21,7 +24,7 @@ const SlotSettings: React.FC = () => {
 
   const BASE_URL = "https://soccerzone-backend.onrender.com/api/slots";
 
-  /** 🔹 Fetch Settings */
+  /** Fetch Settings */
   useEffect(() => {
     const fetchSettings = async () => {
       try {
@@ -49,28 +52,20 @@ const SlotSettings: React.FC = () => {
     fetchSettings();
   }, []);
 
-  /** 🔹 Input change */
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, type, checked, value } = e.target;
-    setSettings((prev) => ({
-      ...prev,
-      [name]:
-        type === "checkbox"
-          ? checked
-          : name === "defaultAmount"
-          ? Number(value)
-          : value,
-    }));
-  };
+  /** Add slot */
+  const handleAddSlot = async (slotValue?: string) => {
+    const slot = (slotValue || newSlot).trim();
+    if (!slot) return;
 
-  /** 🔹 Add slot (PATCH /settings/add-time/:time) */
-  const handleAddSlot = async () => {
-    if (!newSlot.trim()) return;
+    if (settings.slotsPerDay.includes(slot)) {
+      setMessage("❌ Slot already added");
+      return;
+    }
+
     const token = localStorage.getItem("token");
-
     try {
       setSaving(true);
-      const res = await fetch(`${BASE_URL}/settings/add-time/${newSlot.trim()}`, {
+      const res = await fetch(`${BASE_URL}/settings/add-time/${slot}`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -78,10 +73,10 @@ const SlotSettings: React.FC = () => {
 
       setSettings((prev) => ({
         ...prev,
-        slotsPerDay: [...prev.slotsPerDay, newSlot.trim()],
+        slotsPerDay: [...prev.slotsPerDay, slot],
       }));
       setNewSlot("");
-      setMessage("✅ Slot time added!");
+      setMessage("✅ Slot added!");
     } catch (err: any) {
       setMessage(`❌ ${err.message}`);
     } finally {
@@ -89,10 +84,9 @@ const SlotSettings: React.FC = () => {
     }
   };
 
-  /** 🔹 Remove slot (PATCH /settings/remove-time/:time) */
+  /** Remove slot */
   const handleRemoveSlot = async (slot: string) => {
     const token = localStorage.getItem("token");
-
     try {
       setSaving(true);
       const res = await fetch(`${BASE_URL}/settings/remove-time/${slot}`, {
@@ -113,7 +107,7 @@ const SlotSettings: React.FC = () => {
     }
   };
 
-  /** 🔹 Save main settings (PATCH /settings) */
+  /** Save main settings */
   const handleSave = async () => {
     const token = localStorage.getItem("token");
     try {
@@ -131,8 +125,7 @@ const SlotSettings: React.FC = () => {
         }),
       });
       if (!res.ok) throw new Error("Failed to save slot settings");
-
-      setMessage("✅ Slot settings saved successfully!");
+      setMessage("✅ Settings saved successfully!");
     } catch (err: any) {
       setMessage(`❌ ${err.message}`);
     } finally {
@@ -140,7 +133,7 @@ const SlotSettings: React.FC = () => {
     }
   };
 
-  /** 🔹 Loading state */
+  /** Loading State */
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center py-20">
@@ -152,13 +145,15 @@ const SlotSettings: React.FC = () => {
     );
   }
 
-  /** 🔹 UI */
+  const presetTimes = [
+    "07:00","08:00","09:00","10:00","11:00","12:00",
+    "13:00","14:00","15:00","16:00","17:00","18:00",
+    "19:00","20:00",
+  ];
+
   return (
     <section className="max-w-4xl mx-auto py-12">
       <h1 className="text-3xl font-bold text-slate-900 mb-6">Slot Settings</h1>
-      <p className="text-slate-600 mb-10">
-        Manage system-wide slot configuration, pricing, and active status.
-      </p>
 
       {message && (
         <div
@@ -173,23 +168,27 @@ const SlotSettings: React.FC = () => {
       )}
 
       <div className="space-y-8 bg-white shadow-md rounded-lg p-8 border border-slate-200">
-        {/* Global Enabled */}
+
+        {/* Global Enabled Toggle */}
         <div className="flex items-center justify-between">
-          <label className="text-lg font-medium text-slate-700 flex items-center gap-2">
+          <label className="text-lg font-medium text-slate-700 flex items-center gap-2 cursor-pointer">
             {settings.globalEnabled ? (
-              <ToggleRight className="w-6 h-6 text-green-600" />
+              <ToggleRight
+                className="w-6 h-6 text-green-600"
+                onClick={() =>
+                  setSettings((prev) => ({ ...prev, globalEnabled: !prev.globalEnabled }))
+                }
+              />
             ) : (
-              <ToggleLeft className="w-6 h-6 text-gray-400" />
+              <ToggleLeft
+                className="w-6 h-6 text-gray-400"
+                onClick={() =>
+                  setSettings((prev) => ({ ...prev, globalEnabled: !prev.globalEnabled }))
+                }
+              />
             )}
             Enable Global Slots
           </label>
-          <input
-            type="checkbox"
-            name="globalEnabled"
-            checked={settings.globalEnabled}
-            onChange={handleChange}
-            className="h-5 w-5 text-green-600 border-gray-300 rounded"
-          />
         </div>
 
         {/* Default Amount */}
@@ -203,28 +202,59 @@ const SlotSettings: React.FC = () => {
               type="number"
               name="defaultAmount"
               value={settings.defaultAmount}
-              onChange={handleChange}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  defaultAmount: Number(e.target.value),
+                }))
+              }
               className="w-full border border-slate-300 rounded-md pl-10 pr-4 py-2.5 text-slate-900 focus:ring-2 focus:ring-green-600 focus:border-transparent"
               placeholder="Enter default amount"
             />
           </div>
         </div>
 
-        {/* Slots Per Day */}
+        {/* Slot Times Section */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="block text-sm font-medium text-slate-700 mb-3">
             Slot Times (per day)
           </label>
+
+          {/* Preset Slots */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {presetTimes.map((t) => {
+              const selected = settings.slotsPerDay.includes(t);
+              return (
+                <span
+                  key={t}
+                  onClick={() => !selected && handleAddSlot(t)}
+                  className={`cursor-pointer px-3 py-1.5 text-sm rounded-md border
+                    transition select-none
+                    ${
+                      selected
+                        ? "bg-green-600 text-white border-green-600"
+                        : "border-slate-300 hover:bg-green-100 hover:border-green-500 hover:text-green-700"
+                    }
+                  `}
+                >
+                  {t}
+                </span>
+              );
+            })}
+          </div>
+
+          {/* Manual Add */}
           <div className="flex gap-2 mb-3">
             <input
               type="text"
               value={newSlot}
               onChange={(e) => setNewSlot(e.target.value)}
-              placeholder="e.g. 10:00 AM"
-              className="flex-1 border border-slate-300 rounded-md px-3 py-2.5 text-slate-900 focus:ring-2 focus:ring-green-600 focus:border-transparent"
+              placeholder="e.g. 10:00"
+              className="flex-1 border border-slate-300 rounded-md px-3 py-2.5 text-slate-900
+                focus:ring-2 focus:ring-green-600 focus:border-transparent"
             />
             <button
-              onClick={handleAddSlot}
+              onClick={() => handleAddSlot()}
               disabled={saving}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-semibold"
             >
@@ -232,6 +262,7 @@ const SlotSettings: React.FC = () => {
             </button>
           </div>
 
+          {/* Slot List */}
           <ul className="divide-y divide-slate-200 border border-slate-200 rounded-md">
             {settings.slotsPerDay.map((slot, i) => (
               <li

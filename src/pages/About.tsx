@@ -1,7 +1,7 @@
 
-import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Target } from "lucide-react";
+import { Target, Trophy } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 const images = [
   "./szteam.jpg",
@@ -43,8 +43,8 @@ const About: React.FC = () => {
             From our modern pitch and lounge to our snooker and
             PS5 gaming setups, we bring sports and entertainment together
             — creating the ultimate spot to play, relax, and connect with others.
-            With a vibrant lounge, exciting snooker tables, thrilling PS5 game stations, 
-            and a top-quality football pitch, Soccerzone is designed to give you the perfect 
+            With a vibrant lounge, exciting snooker tables, thrilling PS5 game stations,
+            and a top-quality football pitch, Soccerzone is designed to give you the perfect
             blend of play, chill, and community
 
           </p>
@@ -300,12 +300,15 @@ const About: React.FC = () => {
       >
         Book a Match
       </a>
-      <a
-        href="/contact"
-        className="border border-white text-white font-semibold px-8 py-3 rounded-full hover:bg-white hover:text-green-700 transition"
-      >
-        Get in Touch
-      </a>
+   <a
+  href="https://chat.whatsapp.com/GAjn6DukORc9VeM9ebKRc0?mode=hqrt3"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="border border-white text-white font-semibold px-8 py-3 rounded-full hover:bg-white hover:text-green-700 transition"
+>
+  Join a team
+</a>
+
     </div>
   </div>
 </motion.div>

@@ -1,14 +1,15 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
-import Header from "./components/Header";
+import { Route, BrowserRouter as Router, Routes, useLocation } from "react-router-dom";
 import Footer from "./components/Footer";
-import Home from "./pages/Home";
+import Header from "./components/Header";
+import ProtectedRoute from "./components/ProtectedRoute";
 import About from "./pages/About";
+import AdminDashboard from "./pages/AdminDashboard";
 import Bookings from "./pages/Bookings";
+import Dashboard from "./pages/Dashboard";
+import Home from "./pages/Home";
+import ResetPassword from "./pages/ResetPassword";
 import Signup from "./pages/Signup";
 import Success from "./pages/payments/booking/Success";
-import Dashboard from "./pages/Dashboard";
-import AdminDashboard from "./pages/AdminDashboard";
-import ProtectedRoute from "./components/ProtectedRoute";
 
 //  Wrapper component that controls header/footer visibility
 const AppContent = () => {
@@ -32,6 +33,7 @@ const AppContent = () => {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/bookings" element={<Bookings />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/signup" element={<Signup isOpen={true} onClose={() => {}} />} />
           <Route path="/payments/booking/success" element={<Success />} />
 

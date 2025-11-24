@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  Calendar,
-  Clock,
   AlertCircle,
+  Calendar,
   CheckCircle2,
+  Clock,
   Info,
   ShoppingCart,
   UserCheck,
 } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 interface Slot {
   _id: string;
@@ -50,7 +50,7 @@ const AvailableSlots: React.FC = () => {
       setError("Unable to load available slots. Please try again.");
     } finally {
       setLoading(false);
-      
+
       // --- MODIFIED LOGIC ---
       // Apply pending booking if it exists for this date.
       // DO NOT remove it here.
@@ -85,19 +85,19 @@ const AvailableSlots: React.FC = () => {
           startTimes: slotsFromUrl.split(','),
         };
         // Save it to localStorage so fetchSlots can apply it
-        localStorage.setItem("pendingBooking", JSON.stringify(pending)); 
+        localStorage.setItem("pendingBooking", JSON.stringify(pending));
         setSelectedDate(dateFromUrl);
         // Clean the URL so a refresh doesn't re-apply
-        window.history.replaceState({}, '', window.location.pathname); 
+        window.history.replaceState({}, '', window.location.pathname);
       } else {
         // 2. Fallback: Check for localStorage (user refreshed)
         const pendingBookingRaw = localStorage.getItem("pendingBooking");
         if (pendingBookingRaw) {
           const pending = JSON.parse(pendingBookingRaw);
           const today = new Date().toISOString().split("T")[0];
-          
+
           if (pending.date && pending.date !== today) {
-            setSelectedDate(pending.date); 
+            setSelectedDate(pending.date);
           }
         }
       }
@@ -131,7 +131,7 @@ const AvailableSlots: React.FC = () => {
   // --- MODIFIED toggleSlotSelection ---
   const toggleSlotSelection = (slot: Slot) => {
     if (slot.status !== "available") return;
-    
+
     // --- NEW ---
     // Any manual change clears the "saved" booking
     localStorage.removeItem("pendingBooking");
@@ -148,82 +148,76 @@ const AvailableSlots: React.FC = () => {
   };
 
   // --- MODIFIED handleBooking ---
-  const handleBooking = async () => {
-    if (selectedSlots.size === 0) {
-      setBookingError("Please select at least one time slot");
-      return;
-    }
+ const handleBooking = async () => {
+  if (selectedSlots.size < 2) {
+    setBookingError("Please select at least 2 time slots to proceed.");
+    return;
+  }
 
-    setBookingError("");
-    setShowLoginPrompt(false);
+  setBookingError("");
+  setShowLoginPrompt(false);
 
-    const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-    // --- SAVE TO LOCAL STORAGE ---
-    // We save here in case the token is invalid OR missing
-    const pendingBooking = {
-      date: selectedDate,
-      startTimes: Array.from(selectedSlots),
-      returnTo: window.location.pathname,
-    };
-    localStorage.setItem("pendingBooking", JSON.stringify(pendingBooking));
-
-    if (!token) {
-      setShowLoginPrompt(true);
-      return; // Stop here
-    }
-
-    try {
-      setBooking(true);
-
-      const res = await fetch(
-        `https://soccerzone-backend.onrender.com/api/bookings?date=${selectedDate}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            startTimes: Array.from(selectedSlots),
-          }),
-        }
-      );
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Booking failed");
-      }
-
-      const data = await res.json();
-
-      if (data.paymentUrl) {
-        // --- SUCCESS ---
-        // Clear the pending booking *only* on success
-        localStorage.removeItem("pendingBooking"); 
-        window.location.href = data.paymentUrl;
-      }
-    } catch (err: any) {
-      const errorMsg =
-        err.message || "Unable to complete booking. Please try again.";
-
-      if (
-        errorMsg.toLowerCase().includes("token") ||
-        errorMsg.toLowerCase().includes("unauthorized")
-      ) {
-        // Token was invalid. We already saved the pending booking.
-        localStorage.removeItem("token");
-        setShowLoginPrompt(true);
-      } else {
-        // A different error (e.g., server down)
-        // We *keep* the pending booking saved, but show the error
-        setBookingError(errorMsg);
-        localStorage.removeItem("pendingBooking"); // Don't keep if booking itself failed
-      }
-    } finally {
-      setBooking(false);
-    }
+  const pendingBooking = {
+    date: selectedDate,
+    startTimes: Array.from(selectedSlots),
+    returnTo: window.location.pathname,
   };
+  localStorage.setItem("pendingBooking", JSON.stringify(pendingBooking));
+
+  if (!token) {
+    setShowLoginPrompt(true);
+    return;
+  }
+
+  try {
+    setBooking(true);
+
+    const res = await fetch(
+      `https://soccerzone-backend.onrender.com/api/bookings?date=${selectedDate}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          startTimes: Array.from(selectedSlots),
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Booking failed");
+    }
+
+    const data = await res.json();
+
+    if (data.paymentUrl) {
+      localStorage.removeItem("pendingBooking");
+      window.location.href = data.paymentUrl;
+    }
+  } catch (err: any) {
+    const errorMsg =
+      err.message || "Unable to complete booking. Please try again.";
+
+    if (
+      errorMsg.toLowerCase().includes("token") ||
+      errorMsg.toLowerCase().includes("unauthorized")
+    ) {
+      localStorage.removeItem("token");
+      setShowLoginPrompt(true);
+    } else {
+      setBookingError(errorMsg);
+      localStorage.removeItem("pendingBooking");
+    }
+  } finally {
+    setBooking(false);
+  }
+};
+
 
   const availableCount = slots.filter((s) => s.status === "available").length;
   const totalCount = slots.length;
@@ -302,7 +296,7 @@ const AvailableSlots: React.FC = () => {
                   <input
                     type="date"
                     value={selectedDate}
-                  
+
                     // --- MODIFIED onChange ---
                     onChange={(e) => {
                       localStorage.removeItem("pendingBooking"); // Clear on manual change
@@ -605,10 +599,10 @@ const AvailableSlots: React.FC = () => {
                                 onClick={() => {
                                   const date = selectedDate;
                                   const slots = Array.from(selectedSlots).join(',');
-                                  
+
                                   // Create the return URL
                                   const returnUrl = `/available-slots?date=${date}&slots=${slots}`;
-                                  
+
                                   // Redirect to signup, passing the return URL
                                   window.location.href = `/signup?returnTo=${encodeURIComponent(returnUrl)}`;
                                 }}

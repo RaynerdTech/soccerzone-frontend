@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import UserSearchTable from "../../components/AdminDashboard/UserSearchTable";
-import AddUserLayout from "../../components/AdminDashboard/AddUserLayout";
 import { getUsers } from "../../api/admindashboard/users";
+import AddUserLayout from "../../components/AdminDashboard/AddUserLayout";
+import AdminUsersList from "../../components/AdminDashboard/AdminUsersList";
 
 interface User {
   id: string;
@@ -44,10 +44,13 @@ const UsersPage: React.FC = () => {
       <AddUserLayout onUserAdded={() => console.log("User Added!")} />
         </div>
       <h2 className="text-xl font-bold mb-4">User Management</h2>
-      <UserSearchTable
+      {/* <UserSearchTable
         users={users}
         onSearch={(query) => console.log("Searching:", query)}
-      />
+      /> */}
+
+        <AdminUsersList />
+
       {loading && <p className="text-gray-500 mt-4">Loading users...</p>}
     </div>
   );

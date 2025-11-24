@@ -1,15 +1,16 @@
-import React, { useState } from "react";
 import {
-  X,
-  LogIn,
-  UserPlus,
+  ArrowLeft,
   Eye,
   EyeOff,
-  User,
+  Lock,
+  LogIn,
   Mail,
   Phone,
-  Lock,
+  User,
+  UserPlus,
+  X
 } from "lucide-react";
+import React, { useState } from "react";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -18,21 +19,31 @@ interface AuthModalProps {
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [isLogin, setIsLogin] = useState(true);
+  const [showForgot, setShowForgot] = useState(false);
+
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
     password: "",
-    identifier: "", // For email or phone login
+    identifier: "",
   });
+
+  const [forgotEmail, setForgotEmail] = useState("");
+
   const [loading, setLoading] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+
   const [message, setMessage] = useState("");
+  const [forgotMessage, setForgotMessage] = useState("");
+
   const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // -------------------- AUTH SUBMIT ---------------------
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -42,7 +53,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       ? "https://soccerzone-backend.onrender.com/api/auth/login"
       : "https://soccerzone-backend.onrender.com/api/auth/register";
 
-    // Updated body to handle 'identifier' for login
     const body = isLogin
       ? { identifier: form.identifier, password: form.password }
       : {
@@ -68,18 +78,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           : "Registration successful! You can now log in."
       );
 
-      //Decode the token to get the payload
       function parseJwt(token: string) {
         try {
           return JSON.parse(atob(token.split(".")[1]));
-        } catch (e) {
+        } catch {
           return null;
         }
       }
 
       if (isLogin && data.token) {
         localStorage.setItem("token", data.token);
-
         const payload = parseJwt(data.token);
 
         if (payload?.role === "admin" || payload?.role === "super-admin") {
@@ -88,14 +96,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           window.location.href = "/dashboard";
         }
       } else if (!isLogin) {
-        // If registration is successful, switch to login view
         setIsLogin(true);
         setForm({
           name: "",
           email: "",
           phone: "",
           password: "",
-          identifier: form.email, // Pre-fill login with registered email
+          identifier: form.email,
         });
       }
     } catch (err: any) {
@@ -104,6 +111,31 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       setLoading(false);
     }
   };
+
+// / -------------------- FORGOT PASSWORD SUBMIT ---------------------
+const handleForgotSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setForgotLoading(true);
+  setForgotMessage("");
+
+  try {
+    const res = await fetch("https://soccerzone-backend.onrender.com/api/auth/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: forgotEmail }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.message || "Failed to send reset link");
+
+    setForgotMessage("If this email exists, a password reset link has been sent.");
+  } catch (err: any) {
+    setForgotMessage(err.message || "Something went wrong.");
+  } finally {
+    setForgotLoading(false);
+  }
+};
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
@@ -120,30 +152,97 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
+  // #############################################################
+  // ###################### FORGOT PASSWORD ######################
+  // #############################################################
+  if (showForgot) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div className="relative bg-white shadow-2xl rounded-3xl p-8 w-full max-w-md border border-gray-100">
+          {/* Back Button */}
+          <button
+            onClick={() => {
+              setShowForgot(false);
+              setForgotMessage("");
+              setForgotEmail("");
+            }}
+            className="absolute top-4 left-4 text-gray-500 hover:text-gray-700"
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </button>
+
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          <div className="text-center mb-6 mt-2">
+            <h2 className="text-3xl font-bold text-green-600 mb-2 flex items-center justify-center space-x-2">
+              <Mail className="w-8 h-8" />
+              <span>Reset Password</span>
+            </h2>
+            <p className="text-gray-500 text-sm">
+              Enter your email and we’ll send a reset link.
+            </p>
+          </div>
+
+          {forgotMessage && (
+            <div className="mb-4 p-3 bg-green-50 text-green-700 border border-green-200 rounded-xl text-center font-medium">
+              {forgotMessage}
+            </div>
+          )}
+
+          <form onSubmit={handleForgotSubmit} className="space-y-4">
+            <div className="relative">
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="email"
+                placeholder="Email Address"
+                required
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 pl-11 focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={forgotLoading}
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold transition-all duration-300 disabled:opacity-50"
+            >
+              {forgotLoading ? "Sending..." : "Send Reset Link"}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // #############################################################
+  // ###################### LOGIN / REGISTER ######################
+  // #############################################################
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="relative bg-white shadow-2xl rounded-3xl p-8 w-full max-w-md border border-gray-100 transition-all duration-300">
-        {/* Close button */}
+      <div className="relative bg-white shadow-2xl rounded-3xl p-8 w-full max-w-md border border-gray-100">
+        {/* CLOSE */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors rounded-full p-1"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
         >
           <X className="w-6 h-6" />
         </button>
 
         <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-green-600 mb-2 flex items-center justify-center space-x-2">
-            {isLogin ? (
-              <LogIn className="w-8 h-8" />
-            ) : (
-              <UserPlus className="w-8 h-8" />
-            )}
+          <h2 className="text-3xl font-bold text-green-600 mb-2 flex items-center justify-center gap-2">
+            {isLogin ? <LogIn className="w-8 h-8" /> : <UserPlus className="w-8 h-8" />}
             <span>{isLogin ? "Welcome Back" : "Join SoccerZone"}</span>
           </h2>
-          <p className="text-gray-500 text-sm">
-            {isLogin
-              ? "Log in to access your account"
-              : "Create an account to get started"}
+          <p className="text-gray-500">
+            {isLogin ? "Log in to access your account" : "Create an account to get started"}
           </p>
         </div>
 
@@ -159,106 +258,117 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           </div>
         )}
 
+        {/* FORM */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <>
-              {/* Registration Fields */}
+              {/* Full Name */}
               <div className="relative">
                 <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
                   name="name"
                   placeholder="Full Name"
+                  required
                   value={form.name}
                   onChange={handleChange}
-                  required
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 pl-11 focus:ring-2 focus:ring-green-500 transition-all"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 pl-11 focus:ring-2 focus:ring-green-500"
                 />
               </div>
+
+              {/* Email */}
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="email"
                   name="email"
                   placeholder="Email Address"
+                  required={!isLogin}
                   value={form.email}
                   onChange={handleChange}
-                  required
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 pl-11 focus:ring-2 focus:ring-green-500 transition-all"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 pl-11 focus:ring-2 focus:ring-green-500"
                 />
               </div>
+
+              {/* Phone */}
               <div className="relative">
                 <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
                   name="phone"
                   placeholder="Phone Number"
+                  required={!isLogin}
                   value={form.phone}
                   onChange={handleChange}
-                  required
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 pl-11 focus:ring-2 focus:ring-green-500 transition-all"
+                  className="w-full border border-gray-300 rounded-xl px-4 py-3 pl-11 focus:ring-2 focus:ring-green-500"
                 />
               </div>
             </>
           )}
 
           {isLogin && (
-            <>
-              {/* Login Field */}
-              <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  name="identifier"
-                  placeholder="Email or Phone Number"
-                  value={form.identifier}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 pl-11 focus:ring-2 focus:ring-green-500 transition-all"
-                />
-              </div>
-            </>
+            <div className="relative">
+              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                name="identifier"
+                placeholder="Email or Phone Number"
+                required
+                value={form.identifier}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded-xl px-4 py-3 pl-11 focus:ring-2 focus:ring-green-500"
+              />
+            </div>
           )}
 
-          {/* Shared Password Field */}
+          {/* Password */}
           <div className="relative">
             <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type={showPassword ? "text" : "password"}
               name="password"
               placeholder="Password"
+              required
               value={form.password}
               onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 pl-11 pr-12 focus:ring-2 focus:ring-green-500 transition-all"
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 pl-11 pr-12 focus:ring-2 focus:ring-green-500"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-green-600 transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
             >
-              {showPassword ? (
-                <EyeOff className="w-5 h-5" />
-              ) : (
-                <Eye className="w-5 h-5" />
-              )}
+              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50"
           >
             {loading ? "Please wait..." : isLogin ? "Login" : "Create Account"}
           </button>
         </form>
 
+        {/* FORGOT PASSWORD LINK */}
+        {isLogin && (
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => setShowForgot(true)}
+              className="text-green-600 font-medium hover:text-green-700 hover:underline"
+            >
+              Forgot Password?
+            </button>
+          </div>
+        )}
+
+        {/* Switch mode */}
         <p className="mt-6 text-center text-gray-600">
           {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
           <button
             onClick={toggleMode}
-            className="text-green-600 font-semibold hover:text-green-700 hover:underline transition-all duration-200"
+            className="text-green-600 font-semibold hover:text-green-700 hover:underline"
           >
             {isLogin ? "Register" : "Login"}
           </button>

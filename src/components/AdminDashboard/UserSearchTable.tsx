@@ -1,5 +1,5 @@
+import { Eye, Loader2, Search, X } from "lucide-react";
 import React, { useState } from "react";
-import { Search, Eye, X, Loader2 } from "lucide-react";
 import { getUserById } from "../../api/admindashboard/users";
 
 // --- Types ---
